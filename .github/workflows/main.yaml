@@ -1,0 +1,27 @@
+name: CD
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      - SSHPASS: ${{ secrets.APP_PASS }}
+    
+    steps:
+      uses: actions/checkout@v3
+
+      name: APT update and install sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install sshpass
+          
+      name: test pwd
+        run: sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.APP_USER }}@${{ secrets.APP_HOST }} "echo 'ok'"
+        "cd /srv/site1/domaine.fr &&
+        git pull && 
+        composer install &&
+        docker compose -f docker/docker-compose.yaml up -d --build --remove-orphans"
