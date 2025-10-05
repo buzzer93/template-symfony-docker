@@ -24,7 +24,8 @@ services:
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
   app:
     build:
-        dockerfile: Dockerfile
+      context: ..
+      dockerfile: Dockerfile
     image: app
     ports:
       - "8080:80"
