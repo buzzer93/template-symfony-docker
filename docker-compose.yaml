@@ -13,20 +13,22 @@ services:
       start_period: 60s
     volumes:
       - database_data:/var/lib/mysql:rw
-      - ./var/mysql:/var/www/var
+    restart: unless-stopped
+
   mailer:
-    image: axllent/mailpit
+    image: axllent/mailpit:latest
     ports:
       - "1025:1025"
       - "8025:8025"
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    restart: unless-stopped
+
   app:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    image: app
+      dockerfile: Dockerfile
+      image: app:latest   
     ports:
       - "8080:80"
     environment:
@@ -34,8 +36,11 @@ services:
       DATABASE_URL: "mysql://${DATABASE_USER:-app}:${DATABASE_PASSWORD:-app}@database:3306/${DATABASE_NAME:-app}"
       MAILER_DSN: "smtp://mailer:1025"
     depends_on:
-      - database
-      - mailer
+      database:
+        condition: service_healthy
+      mailer:
+        condition: service_started
+    restart: unless-stopped
 
 volumes:
   database_data:

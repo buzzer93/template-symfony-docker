@@ -49,6 +49,7 @@
     "config": {
         "allow-plugins": {
             "php-http/discovery": true,
+            "phpro/grumphp": true,
             "symfony/flex": true,
             "symfony/runtime": true
         },
@@ -86,7 +87,11 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ]
+        ],
+        "audit:composer": "composer audit --no-interaction --locked",
+        "cs:check": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix"
+
     },
     "conflict": {
         "symfony/symfony": "*"
@@ -99,7 +104,16 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.5",
+        "friendsofphp/php-cs-fixer": "3.64",
+        "j13k/yaml-lint": "^1.1",
+        "php-parallel-lint/php-parallel-lint": "1.3",
+        "phpmd/phpmd": "^2.15",
+        "phpro/grumphp": "2.15",
+        "phpstan/phpstan": "2.1",
+        "phpstan/phpstan-symfony": "2.0",
+        "phpunit/phpunit": "11.0",
+        "sclable/xml-lint": "^0.9.0",
+        "seld/jsonlint": "^1.11",
         "symfony/browser-kit": "7.3.*",
         "symfony/css-selector": "7.3.*",
         "symfony/debug-bundle": "7.3.*",
