@@ -1,4 +1,4 @@
-parameters:
+grumphp:
   # Stoppe immédiatement si une tâche échoue
   stop_on_failure: true
   
