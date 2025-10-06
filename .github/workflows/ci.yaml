@@ -15,8 +15,6 @@ concurrency:
 
 env:
   PHP_VERSION: "8.2"
-  # Paramétrable côté repo/env si besoin : Settings > Variables
-  DATABASE_VERSION: "8.0"
   APP_ENV: test
 
 jobs:
@@ -27,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP ${{ env.PHP_VERSION }}
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
@@ -48,7 +46,6 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
 
-      # Lints Symfony natifs (rapides, zéro config)
       - name: Lint YAML (Symfony)
         run: php bin/console lint:yaml config translations --env=test
 
@@ -58,20 +55,20 @@ jobs:
       - name: Lint Container (Symfony)
         run: php bin/console lint:container --env=test
 
-      # Lints via GrumPHP (si présents dans ton grumphp.yml)
       - name: Lints YAML/JSON/XML (GrumPHP)
         run: vendor/bin/grumphp run --tasks=yamllint,jsonlint,xmllint -n
 
-      # Style (PSR-12 via PHP-CS-Fixer en dry-run)
       - name: PHP-CS-Fixer (check)
         run: vendor/bin/php-cs-fixer fix --dry-run --diff
 
   tests:
-    name: PHPUnit (MySQL ${{ env.DATABASE_VERSION }})
+    name: PHPUnit (MySQL 8.0)
     runs-on: ubuntu-latest
+
+    # IMPORTANT : pas d'expressions dans "services.*.image"
     services:
       mysql:
-        image: mysql:${{ env.DATABASE_VERSION }}
+        image: mysql:8.0
         env:
           MYSQL_DATABASE: app
           MYSQL_USER: symfony
@@ -84,13 +81,14 @@ jobs:
 
     env:
       APP_ENV: test
-      DATABASE_URL: "mysql://symfony:symfony@127.0.0.1:3306/app?serverVersion=${{ env.DATABASE_VERSION }}&charset=utf8mb4"
+      # On fixe la version ici pour les commandes; pas d'expressions.
+      DATABASE_VERSION: "8.0"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP ${{ env.PHP_VERSION }}
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
@@ -111,11 +109,10 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
 
-      - name: Prepare test env
+      # On construit DATABASE_URL dans l'environnement du job via $GITHUB_ENV
+      - name: Export DATABASE_URL
         run: |
-          cp .env .env.test.local || true
-          sed -i 's/^APP_ENV=.*/APP_ENV=test/' .env.test.local || true
-          echo "DATABASE_URL=${DATABASE_URL}" >> .env.test.local
+          echo "DATABASE_URL=mysql://symfony:symfony@127.0.0.1:3306/app?serverVersion=${DATABASE_VERSION}&charset=utf8mb4" >> $GITHUB_ENV
 
       - name: Warmup cache
         run: php bin/console cache:warmup --env=test
@@ -153,7 +150,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP ${{ env.PHP_VERSION }}
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
@@ -185,7 +182,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP ${{ env.PHP_VERSION }}
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
@@ -207,20 +204,3 @@ jobs:
 
       - name: Composer audit
         run: composer audit --no-interaction --format=summary
-
-  # Optionnel : build Docker pour vérifier que l'image FROM php:8.2-apache se construit
-  docker-build:
-    name: Docker build (php:8.2-apache)
-    runs-on: ubuntu-latest
-    needs: [tests, phpstan]  # on ne build que si tests & analyse passent
-    if: ${{ github.event_name != 'pull_request' }} # évite de builder sur PR, modifie selon ton besoin
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build image
-        run: |
-          docker build \
-            --build-arg APP_ENV=prod \
-            -t myapp:${{ github.sha }} \
-            -f Dockerfile .
