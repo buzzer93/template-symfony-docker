@@ -1,10 +1,7 @@
 parameters:
   # Stoppe immédiatement si une tâche échoue
   stop_on_failure: true
-
-  scripts:
-    pre_run: ["@composer grumphp:pre-run"]
-    post_run: ["@composer grumphp:post-run"]
+  
   # Configuration pour l’auto-fix (php-cs-fixer)
   fixer:
     enabled: true
