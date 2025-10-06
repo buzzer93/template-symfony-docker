@@ -124,7 +124,7 @@ jobs:
 
       - name: Run PHPUnit
         run: |
-          vendor/bin/phpunit --colors=always --verbose \
+          vendor/bin/phpunit --colors=always \
             --log-junit var/junit.xml \
             --coverage-clover var/coverage.xml
 
