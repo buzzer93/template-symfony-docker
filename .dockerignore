@@ -1,0 +1,12 @@
+.git
+node_modules
+vendor
+docker-compose*.yml
+.env
+.env.*
+.gitignore
+.DS_Store
+.idea
+.vscode
+npm-debug.log*
+yarn-error.log*
