@@ -35,10 +35,10 @@ COPY --chown=www-data:www-data . /var/www
 # RUN npm ci && npm run build
 
 # 8) Appliquer ta conf Apache
-COPY ./docker/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY ./apache.conf /etc/apache2/sites-available/000-default.conf
 
 # 9) Entrypoint/script
-COPY ./docker/docker.sh /var/www/docker.sh
+COPY ./docker.sh /var/www/docker.sh
 RUN chmod +x /var/www/docker.sh
 ENTRYPOINT ["bash", "/var/www/docker.sh"]
 
